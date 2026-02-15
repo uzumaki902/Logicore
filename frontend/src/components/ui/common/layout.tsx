@@ -1,14 +1,12 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet } from "react-router-dom";
 
 export default function CommonLayout() {
   return (
     <div>
-        <div className=" bg-amber-500">
-            common header
-        </div>
-        <main className="relative mx-auto max-w-20xl px-1 py-90">
-            <Outlet />
-        </main>
+      <header className="border-b border-slate-200 bg-white/70 px-6 py-3 backdrop-blur md:px-10">
+        <p className="text-sm font-medium text-slate-700">Logicore</p>
+      </header>
+      <Outlet />
     </div>
-  )
+  );
 }
