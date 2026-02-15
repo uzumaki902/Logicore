@@ -1,16 +1,16 @@
+import { Routes, Route } from 'react-router-dom';
+import CommonLayout from './components/ui/common/layout';
+import { Navigate } from 'react-router-dom';
+import Login from './pages/login';
 
-import './App.css'
-
-function App() {
-  
-
+export default function App() {
   return (
-    <>
-      <div className="flex flex-col items-center justify-center h-screen bg-red-500 width-full">
-        <h1 className="text-3xl font-bold underline">Hello World</h1>
-      </div>
-    </>
+    <Routes>
+      <Route element={<CommonLayout />}>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="*" element={<div>404 not found</div>} />
+      </Route>
+    </Routes>
   );
 }
-
-export default App;
