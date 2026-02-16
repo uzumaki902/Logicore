@@ -2,11 +2,11 @@ import { Outlet } from 'react-router-dom';
 
 export default function CommonLayout() {
   return (
-    <div>
-        <div className=" bg-amber-500">
+    <div className="min-h-screen flex flex-col">
+        <header className="bg-amber-500">
             common header
-        </div>
-        <main className="relative mx-auto max-w-20xl px-1 py-90">
+        </header>
+        <main className="flex-1 w-full flex flex-col min-h-0">
             <Outlet />
         </main>
     </div>

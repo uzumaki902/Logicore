@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
-import CommonLayout from './components/ui/common/layout';
+import CommonLayout from './components/common/layout';
 import { Navigate } from 'react-router-dom';
 import Login from './pages/login';
 

@@ -1,15 +1,13 @@
-import { Button } from "@/components/ui/button"
-
+import { Button } from "@/components/ui/button";
 export default function Login() {
-  return <div>
-    <main className="min-h-screen bg-linear-to-r from-slate-50 to-cyan-50">
-      {/* Centered container for all hero content */}
-      <section>
-        
+  return (
+    // Full page wrapper - fills space below layout
+    <div className="flex-1 flex w-full min-h-0 bg-linear-to-r from-slate-50 to-cyan-50">
+      <section className="flex flex-1 w-full items-start justify-between gap-10">
         {/* LEFT SIDE: badge + heading + feature cards */}
         <div className="max-w-2xl">
           {/* Small top badge/pill */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg- px-4 py-1 text-sm text-slate-600 shadow-sm">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1 text-sm text-slate-600 shadow-sm">
             {/* Dot icon */}
             <span className="h-2 w-2 rounded-full bg-emerald-500" />
             {/* Badge text */}
@@ -41,9 +39,7 @@ export default function Login() {
               <h3 className="mb-1 text-sm font-semibold text-slate-900">
                 Get results as fast as possible
               </h3>
-              <p className="text-sm text-slate-500">
-                Call any model you want
-              </p>
+              <p className="text-sm text-slate-500">Call any model you want</p>
             </article>
           </div>
         </div>
@@ -56,9 +52,16 @@ export default function Login() {
           </h2>
 
           {/* Primary action button */}
-          <Button  variant="destructive">Login</Button>
+
+          <Button
+            data-testid="login-btn"
+            className="cursor-pointer"
+            variant="destructive"
+          >
+            Button
+          </Button>
         </aside>
       </section>
-    </main>
-  </div>;
+    </div>
+  );
 }
