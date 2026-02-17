@@ -17,13 +17,13 @@ function extractEnv(key: string) {
   return getVal;
 }
 
-function makeScalekit() {
-  return new ScalekitClient(
-    extractEnv("SCALEKIT_ENVIRONMENT_URL"),
-    extractEnv("SCALEKIT_CLIENT_ID"),
-    extractEnv("SCALEKIT_CLIENT_SECRET"),
-  );
-}
+  function makeScalekit() {
+    return new ScalekitClient(
+      extractEnv("SCALEKIT_ENVIRONMENT_URL"),
+      extractEnv("SCALEKIT_CLIENT_ID"),
+      extractEnv("SCALEKIT_CLIENT_SECRET"),
+    );
+  }
 
 function getQueryString(value: unknown) {
   if (typeof value === "string") return value;
@@ -40,7 +40,7 @@ function stateCookieOptions() {
   };
 }
 router.get("/login", (req, res) => {
-  try {
+    try {
     const scalekit = makeScalekit();
     const state = crypto.randomBytes(16).toString("hex");
     res.cookie("sp_oauth_state", state, stateCookieOptions());
