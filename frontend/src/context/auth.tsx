@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
 import { apiGet, apiPost } from "@/lib/api";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
-export type User = {
+type User = {
   id: string;
   email: string;
   name?: string;
@@ -25,31 +25,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
     async function fetchUser() {
-      try {
-        const res = await apiGet<MeResponse>("/auth/me");
-        if (!mounted) return;
+      const res = await apiGet<MeResponse>("/auth/me");
 
-        if (res.ok) {
-          setUser(res.data.user);
-        } else {
-          setUser(null);
-        }
-      } catch {
-        if (!mounted) return;
+      if (res.ok) {
+        setUser(res.data.user);
+      } else {
         setUser(null);
-      } finally {
-        if (!mounted) return;
-        setLoading(false);
       }
+
+      setLoading(false);
     }
 
     fetchUser();
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   async function logout() {
@@ -66,7 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const contextVal = useContext(AuthContext);
-  if (!contextVal) throw new Error("useAuth must be used inside AuthProvider");
+
+  if (!contextVal) throw new Error("useauth must be used inside provider");
+
   return contextVal;
 }
 
@@ -86,3 +76,4 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   return <>{children}</>;
 }
+    

@@ -58,7 +58,7 @@ export default function Login() {
             className="cursor-pointer"
             variant="destructive"
           >
-            Button
+            Login
           </Button>
         </aside>
       </section>

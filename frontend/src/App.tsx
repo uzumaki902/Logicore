@@ -3,6 +3,7 @@ import CommonLayout from "./components/common/layout";
 import { Navigate } from "react-router-dom";
 import Login from "./pages/login";
 import Support from "./pages/support";
+import { AuthGate } from "./context/auth";
 
 export default function App() {
   return (
@@ -10,7 +11,14 @@ export default function App() {
       <Route element={<CommonLayout />}>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/support" element={<Support />} />
+        <Route
+          path="/support"
+          element={
+            <AuthGate>
+              <Support />
+            </AuthGate>
+          }
+        />
         <Route path="*" element={<div>404 not found</div>} />
       </Route>
     </Routes>
