@@ -1,5 +1,26 @@
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/auth";
+import { BACKEND_URL } from "@/lib/api";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 export default function Login() {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/support", { replace: true });
+    }
+  }, [loading, user, navigate]);
+
+  function onLogin() {
+    window.location.href = `${BACKEND_URL}/auth/login`;
+  }
+
+  if (loading) return <div className="text-sm">Checking session...</div>;
+
+  if (user) return null;
+
   return (
     // Full page wrapper - fills space below layout
     <div className="flex-1 flex w-full min-h-0 bg-linear-to-r from-slate-50 to-cyan-50">
@@ -57,6 +78,7 @@ export default function Login() {
             data-testid="login-btn"
             className="cursor-pointer"
             variant="destructive"
+            onClick={onLogin}
           >
             Login
           </Button>

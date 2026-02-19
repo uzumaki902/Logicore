@@ -1,10 +1,16 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
-import logo from "@/assets/images/logilogo.png"
-
-
+import logo from "@/assets/images/logilogo.png";
+import { useAuth } from "@/context/auth";
 
 export default function CommonLayout() {
+  const navigate = useNavigate();
+  const { loading, logout, user } = useAuth();
+
+  async function onlogout() {
+    await logout();
+    navigate("/login");
+  }
   return (
     <div className="min-h-screen bg-white">
       <div className="fixed inset-0">
@@ -30,7 +36,9 @@ export default function CommonLayout() {
           </Link>
 
           <div className="ml-auto flex items-center gap-2">
-            <Button>Logout</Button>
+            {!loading && user ? (
+              <Button onClick={onlogout}>Logout</Button>
+            ) : null}
           </div>
         </div>
       </header>
