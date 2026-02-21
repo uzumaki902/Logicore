@@ -5,6 +5,9 @@ import cors from "cors";
 import authRouter from "./auth/auth.routes";
 import authE2ERouter from "./auth/e2e.routes";
 import supportRouter from "./support/support.routes";
+import orgRouter from "./org/org.routes";
+import ticketRouter from "./support/ticket.routes";
+import dashboardRouter from "./dashboard/dashboard.routes";
 import { requireAuth } from "./auth/auth.middleware";
 
 async function main() {
@@ -40,9 +43,11 @@ async function main() {
   });
   app.use("/auth", authRouter);
   app.use("/auth", authE2ERouter);
-  // Triggering dev server restart
   app.use("/api", requireAuth);
+  app.use("/api/org", orgRouter);
   app.use("/api/support", supportRouter);
+  app.use("/api/support", ticketRouter);
+  app.use("/api/dashboard", dashboardRouter);
 
   const port = process.env.PORT || 5000;
   app.listen(port, () => {

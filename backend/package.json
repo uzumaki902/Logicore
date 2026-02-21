@@ -17,13 +17,13 @@
     "@langchain/langgraph": "^1.1.5",
     "@langchain/openai": "^1.2.9",
     "@scalekit-sdk/node": "^2.2.0",
+    "@supabase/supabase-js": "^2.97.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "langchain": "^1.2.25",
-    "mongoose": "^9.2.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {

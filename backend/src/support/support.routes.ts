@@ -3,6 +3,7 @@ import { DraftSchema, RequestSchema } from "./support.schema";
 import { createAgent } from "langchain";
 import { MessagesValue, StateSchema } from "@langchain/langgraph";
 import { TavilyResult, tavilySearch } from "./tavily";
+import { supabase } from "../db/supabase";
 
 const router = Router();
 
@@ -147,16 +148,72 @@ router.post("/run", async (req, res) => {
         });
       }
 
-      return res.json({ reply: draft.reply, sources });
+      // Save conversation to DB
+      let conversationId: string | null = null;
+      const { data: member } = await supabase
+        .from("org_members")
+        .select("org_id")
+        .eq("user_id", req.user!.id)
+        .limit(1)
+        .single();
+
+      if (member) {
+        const title = ticket.slice(0, 60) + (ticket.length > 60 ? "..." : "");
+        const { data: conv } = await supabase
+          .from("conversations")
+          .insert({
+            org_id: member.org_id,
+            user_id: req.user!.id,
+            title,
+            ticket_text: ticket,
+            reply: draft.reply,
+            sources,
+            status: "resolved",
+          })
+          .select("id")
+          .single();
+        conversationId = conv?.id || null;
+      }
+
+      return res.json({ reply: draft.reply, sources, conversationId });
     }
 
-    return res.json({ reply: draft.reply, sources: [] });
+    return res.json({ reply: draft.reply, sources: [], conversationId: null });
   } catch (err: any) {
     return res.status(500).json({
       error: "Source agent failed",
       details: err?.message || String(err),
     });
   }
+});
+
+// Get conversation history for user's org
+router.get("/history", async (req, res) => {
+  const user = req.user!;
+
+  const { data: member } = await supabase
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+
+  if (!member) {
+    return res.json({ conversations: [] });
+  }
+
+  const { data: conversations, error } = await supabase
+    .from("conversations")
+    .select("*")
+    .eq("org_id", member.org_id)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    return res.status(500).json({ error: "Failed to fetch history" });
+  }
+
+  return res.json({ conversations: conversations || [] });
 });
 
 export default router;

@@ -3,6 +3,8 @@ import { useAuth } from "@/context/auth";
 import { BACKEND_URL } from "@/lib/api";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "@/assets/images/logilogo.png";
+
 export default function Login() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
@@ -17,73 +19,84 @@ export default function Login() {
     window.location.href = `${BACKEND_URL}/auth/login`;
   }
 
-  if (loading) return <div className="text-sm">Checking session...</div>;
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-sm text-gray-400 dark:text-slate-400">Checking session...</p>
+      </div>
+    );
+  }
 
   if (user) return null;
 
   return (
-    // Full page wrapper - fills space below layout
-    <div className="flex-1 flex w-full min-h-0 bg-linear-to-r from-slate-50 to-cyan-50">
-      <section className="flex flex-1 w-full items-start justify-between gap-10">
-        {/* LEFT SIDE: badge + heading + feature cards */}
-        <div className="max-w-2xl">
-          {/* Small top badge/pill */}
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1 text-sm text-slate-600 shadow-sm">
-            {/* Dot icon */}
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            {/* Badge text */}
-            <span>Agentic Support Desk</span>
+    <div className="flex min-h-[70vh] items-center">
+      <div className="grid w-full gap-16 lg:grid-cols-2 lg:items-center">
+        {/* LEFT: Brand story */}
+        <div className="space-y-8">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 dark:bg-slate-800 ring-1 ring-gray-200 dark:ring-slate-700">
+              <img
+                src={logo}
+                alt="Logicore"
+                className="h-6 w-6 object-contain"
+              />
+            </div>
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">Logicore</span>
           </div>
 
-          {/* Main hero heading */}
-          <h1 className="mb-8 text-4xl font-semibold leading-tight text-slate-900 md:text-5xl">
-            {/* Line 1 */}
-            <span className="block">Triage tickets. Draft replies.</span>
-            {/* Line 2 */}
-            <span className="block">Save runs for audit and reuse</span>
-          </h1>
+          <div>
+            <h1 className="text-4xl font-semibold leading-tight tracking-tight text-gray-900 dark:text-white md:text-5xl">
+              <span className="block">Automate support</span>
+              <span className="block text-gray-400 dark:text-slate-400">with intelligent AI agents</span>
+            </h1>
+            <p className="mt-4 max-w-md text-base leading-relaxed text-gray-500 dark:text-slate-400">
+              Triage tickets, draft replies, and escalate issues — all powered by agentic AI infrastructure.
+            </p>
+          </div>
 
-          {/* Feature cards row */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* Feature card 1 */}
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-1 text-sm font-semibold text-slate-900">
-                Structured Output
-              </h3>
-              <p className="text-sm text-slate-500">
-                Category, reply and next actions
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">Structured Output</h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                Category, reply, sources & next actions
               </p>
-            </article>
-
-            {/* Feature card 2 */}
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-1 text-sm font-semibold text-slate-900">
-                Get results as fast as possible
-              </h3>
-              <p className="text-sm text-slate-500">Call any model you want</p>
-            </article>
+            </div>
+            <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-4">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white">Multi-source AI</h3>
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                Web search + knowledge base reasoning
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* RIGHT SIDE: login card */}
-        <aside className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white p-6 shadow-xl">
-          {/* Card title */}
-          <h2 className="mb-6 text-3xl font-semibold text-slate-900">
-            Continue to Agent
-          </h2>
+        {/* RIGHT: Login card */}
+        <div className="flex justify-center lg:justify-end">
+          <div className="w-full max-w-sm rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-8 shadow-lg">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              Sign in to Logicore
+            </h2>
+            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
+              Access your AI support workspace
+            </p>
 
-          {/* Primary action button */}
+            <div className="mt-8">
+              <Button
+                data-testid="login-btn"
+                onClick={onLogin}
+                className="h-11 w-full cursor-pointer bg-indigo-600 text-white hover:bg-indigo-500 transition-all hover:scale-[1.01]"
+              >
+                Sign in with SSO
+              </Button>
+            </div>
 
-          <Button
-            data-testid="login-btn"
-            className="cursor-pointer"
-            variant="destructive"
-            onClick={onLogin}
-          >
-            Login
-          </Button>
-        </aside>
-      </section>
+            <p className="mt-6 text-center text-xs text-gray-400 dark:text-slate-500">
+              Powered by Agentic AI
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
