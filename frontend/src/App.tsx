@@ -19,7 +19,7 @@ export default function App() {
             </AuthGate>
           }
         />
-        <Route path="*" element={<div>404 not found</div>} />
+        <Route path="*" element={<div>404 not found.</div>} />
       </Route>
     </Routes>
   );
