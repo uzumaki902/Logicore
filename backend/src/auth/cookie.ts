@@ -8,11 +8,13 @@ export type SessionUser = {
 };
 
 function cookieOptions() {
-  const isProd = process.env.NODE_ENV === "production";
+  const isProd =
+    process.env.NODE_ENV === "production" ||
+    (process.env.BACKEND_URL ?? "").startsWith("https");
   return {
     httpOnly: true,
     secure: isProd,
-    sameSite: "lax" as const,
+    sameSite: isProd ? ("none" as const) : ("lax" as const),
     path: "/",
   };
 }

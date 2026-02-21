@@ -17,30 +17,32 @@ function extractEnv(key: string) {
   return getVal;
 }
 
-  function makeScalekit() {
-    return new ScalekitClient(
-      extractEnv("SCALEKIT_ENVIRONMENT_URL"),
-      extractEnv("SCALEKIT_CLIENT_ID"),
-      extractEnv("SCALEKIT_CLIENT_SECRET"),
-    );
-  }
+function makeScalekit() {
+  return new ScalekitClient(
+    extractEnv("SCALEKIT_ENVIRONMENT_URL"),
+    extractEnv("SCALEKIT_CLIENT_ID"),
+    extractEnv("SCALEKIT_CLIENT_SECRET"),
+  );
+}
 
 function getQueryString(value: unknown) {
   if (typeof value === "string") return value;
   return undefined;
 }
 function stateCookieOptions() {
-  const isProd = process.env.NODE_ENV === "production";
+  const isProd =
+    process.env.NODE_ENV === "production" ||
+    (process.env.BACKEND_URL ?? "").startsWith("https");
   return {
     httpOnly: true,
     secure: isProd,
-    sameSite: "lax" as const,
+    sameSite: isProd ? ("none" as const) : ("lax" as const),
     path: "/",
     maxAge: 60 * 60 * 1000, // 1 hour
   };
 }
 router.get("/login", (req, res) => {
-    try {
+  try {
     const scalekit = makeScalekit();
     const state = crypto.randomBytes(16).toString("hex");
     res.cookie("sp_oauth_state", state, stateCookieOptions());
@@ -98,7 +100,7 @@ router.get("/me", requireAuth, (req, res) => {
       id: req.user!.id,
       email: req.user!.email,
       name: req.user!.name,
-    }
+    },
   });
 });
 
