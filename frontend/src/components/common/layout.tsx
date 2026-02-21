@@ -19,47 +19,48 @@ export default function CommonLayout() {
 
   function navClass(path: string) {
     const active = location.pathname === path;
-    return `rounded-lg px-3 py-1.5 text-sm font-medium transition ${active
-      ? "bg-gray-200 dark:bg-slate-800 text-gray-900 dark:text-white"
-      : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800/50"
+    return `rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 ${active
+        ? "bg-gray-200 dark:bg-slate-800 text-gray-900 dark:text-white"
+        : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800/50"
       }`;
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0B0F14] transition-colors duration-300">
-      <header className="sticky top-0 z-20 border-b border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-[#0B0F14]/90 backdrop-blur-md transition-colors duration-300">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
-          <Link to="/" className="no-underline">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-slate-800 ring-1 ring-gray-200 dark:ring-slate-700">
-                <img
-                  src={logo}
-                  alt="Logicore"
-                  className="h-5 w-5 object-contain"
-                />
+    <div className="min-h-screen bg-gray-50 dark:bg-[#0B0F14] transition-colors duration-200">
+      {/* ── Navbar ── */}
+      <header className="sticky top-0 z-30 h-14 border-b border-gray-200 dark:border-[#1F2937] bg-white/80 dark:bg-[#0B0F14]/80 backdrop-blur-xl transition-colors duration-200">
+        <div className="mx-auto flex h-full max-w-6xl items-center px-4">
+          {/* LEFT: Logo + Nav */}
+          <div className="flex items-center gap-6">
+            <Link to="/" className="no-underline">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 dark:bg-[#111827] ring-1 ring-gray-200 dark:ring-[#1F2937]">
+                  <img src={logo} alt="Logicore" className="h-5 w-5 object-contain" />
+                </div>
+                <span className="text-sm font-semibold text-gray-900 dark:text-white tracking-tight">
+                  Logicore
+                </span>
               </div>
-              <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                Logicore
-              </span>
-            </div>
-          </Link>
+            </Link>
 
-          {showNav && (
-            <nav className="ml-6 flex items-center gap-1">
-              <Link to="/support" className={`${navClass("/support")} no-underline`}>
-                Support
-              </Link>
-              <Link to="/dashboard" className={`${navClass("/dashboard")} no-underline`}>
-                Dashboard
-              </Link>
-            </nav>
-          )}
+            {showNav && (
+              <nav className="flex items-center gap-1">
+                <Link to="/support" className={`${navClass("/support")} no-underline`}>
+                  Support
+                </Link>
+                <Link to="/dashboard" className={`${navClass("/dashboard")} no-underline`}>
+                  Dashboard
+                </Link>
+              </nav>
+            )}
+          </div>
 
+          {/* RIGHT: Theme toggle + User + Logout */}
           <div className="ml-auto flex items-center gap-3">
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-800 dark:hover:text-white transition-colors cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-[#1A2233] hover:text-gray-900 dark:hover:text-white transition-all duration-200 cursor-pointer"
               aria-label="Toggle theme"
               title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
@@ -83,14 +84,15 @@ export default function CommonLayout() {
             </button>
 
             {showNav && (
-              <span className="hidden text-xs text-gray-400 dark:text-slate-500 sm:inline">
+              <span className="hidden text-xs font-medium text-gray-400 dark:text-slate-500 sm:inline">
                 {org.name}
               </span>
             )}
+
             {!loading && user ? (
               <Button
                 onClick={onlogout}
-                className="h-8 text-xs bg-black text-white hover:bg-red-600 hover:text-white transition-colors cursor-pointer"
+                className="h-8 rounded-xl text-xs font-medium bg-black text-white hover:bg-red-600 hover:text-white transition-all duration-200 cursor-pointer press-scale"
               >
                 Logout
               </Button>
@@ -98,6 +100,8 @@ export default function CommonLayout() {
           </div>
         </div>
       </header>
+
+      {/* ── Page Content ── */}
       <main className="relative mx-auto max-w-6xl px-4 py-8">
         <Outlet />
       </main>

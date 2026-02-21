@@ -46,10 +46,10 @@ export default function OrgSetup() {
     }
 
     return (
-        <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex min-h-[60vh] items-center justify-center fade-in">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
-                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
                         Set up your workspace
                     </h1>
                     <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
@@ -58,11 +58,17 @@ export default function OrgSetup() {
                 </div>
 
                 {mode === "choose" && (
-                    <div className="grid gap-3">
+                    <div className="grid gap-4">
                         <button
                             onClick={() => setMode("create")}
-                            className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-5 text-left transition hover:border-indigo-500/50 hover:bg-gray-100 dark:hover:bg-slate-800/50"
+                            className="rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-6 text-left transition-all duration-200 hover:border-[#6366F1]/50 hover:bg-gray-50 dark:hover:bg-[#1A2233] hover-lift"
                         >
+                            <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#6366F1]/10 text-[#6366F1]">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                            </div>
                             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                                 Create Organization
                             </h3>
@@ -73,8 +79,16 @@ export default function OrgSetup() {
 
                         <button
                             onClick={() => setMode("join")}
-                            className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-5 text-left transition hover:border-indigo-500/50 hover:bg-gray-100 dark:hover:bg-slate-800/50"
+                            className="rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-6 text-left transition-all duration-200 hover:border-[#6366F1]/50 hover:bg-gray-50 dark:hover:bg-[#1A2233] hover-lift"
                         >
+                            <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#6366F1]/10 text-[#6366F1]">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="8.5" cy="7" r="4" />
+                                    <line x1="20" y1="8" x2="20" y2="14" />
+                                    <line x1="23" y1="11" x2="17" y2="11" />
+                                </svg>
+                            </div>
                             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                                 Join Organization
                             </h3>
@@ -86,7 +100,7 @@ export default function OrgSetup() {
                 )}
 
                 {mode === "create" && (
-                    <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-6 space-y-4 transition-colors">
+                    <div className="rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-6 space-y-4 transition-colors duration-200">
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                             Create Organization
                         </h3>
@@ -100,32 +114,39 @@ export default function OrgSetup() {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 disabled={loading}
-                                className="h-10 w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 px-3 text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition"
+                                className="h-10 w-full rounded-lg border border-gray-200 dark:border-[#1F2937] bg-gray-50 dark:bg-[#0B0F14] px-3 text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200 disabled:opacity-50"
                             />
                         </div>
                         {error && <p className="text-xs text-red-400">{error}</p>}
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex gap-3 pt-2">
                             <Button
                                 variant="ghost"
                                 onClick={() => setMode("choose")}
                                 disabled={loading}
-                                className="text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-white"
+                                className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white rounded-xl"
                             >
                                 Back
                             </Button>
                             <Button
                                 onClick={handleCreate}
                                 disabled={loading}
-                                className="flex-1 bg-indigo-600 text-white hover:bg-indigo-500"
+                                className="flex-1 rounded-xl bg-[#6366F1] text-white font-medium hover:bg-[#7C83FF] transition-all duration-200 press-scale disabled:opacity-60"
                             >
-                                {loading ? "Creating..." : "Create"}
+                                {loading ? (
+                                    <span className="flex items-center gap-2">
+                                        <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                        Creating...
+                                    </span>
+                                ) : (
+                                    "Create"
+                                )}
                             </Button>
                         </div>
                     </div>
                 )}
 
                 {mode === "join" && (
-                    <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/50 p-6 space-y-4 transition-colors">
+                    <div className="rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-6 space-y-4 transition-colors duration-200">
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                             Join Organization
                         </h3>
@@ -139,25 +160,32 @@ export default function OrgSetup() {
                                 value={orgId}
                                 onChange={(e) => setOrgId(e.target.value)}
                                 disabled={loading}
-                                className="h-10 w-full rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800/50 px-3 text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition"
+                                className="h-10 w-full rounded-lg border border-gray-200 dark:border-[#1F2937] bg-gray-50 dark:bg-[#0B0F14] px-3 text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200 disabled:opacity-50"
                             />
                         </div>
                         {error && <p className="text-xs text-red-400">{error}</p>}
-                        <div className="flex gap-2 pt-2">
+                        <div className="flex gap-3 pt-2">
                             <Button
                                 variant="ghost"
                                 onClick={() => setMode("choose")}
                                 disabled={loading}
-                                className="text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-white"
+                                className="text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white rounded-xl"
                             >
                                 Back
                             </Button>
                             <Button
                                 onClick={handleJoin}
                                 disabled={loading}
-                                className="flex-1 bg-indigo-600 text-white hover:bg-indigo-500"
+                                className="flex-1 rounded-xl bg-[#6366F1] text-white font-medium hover:bg-[#7C83FF] transition-all duration-200 press-scale disabled:opacity-60"
                             >
-                                {loading ? "Joining..." : "Join"}
+                                {loading ? (
+                                    <span className="flex items-center gap-2">
+                                        <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                        Joining...
+                                    </span>
+                                ) : (
+                                    "Join"
+                                )}
                             </Button>
                         </div>
                     </div>

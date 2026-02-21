@@ -103,28 +103,47 @@ export default function Support() {
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Sidebar */}
-      <aside className="hidden w-56 shrink-0 lg:block">
-        <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-lg border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900/30 p-3 transition-colors">
-          <ConversationSidebar
-            conversations={conversations}
-            selectedId={selectedConvId}
-            onSelect={handleSelectConversation}
+    <div className="space-y-6 fade-in">
+      {/* Header */}
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white tracking-tight">
+            AI Support Workspace
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+            Paste a customer request and let Logicore generate an intelligent response.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] px-3 py-1.5 text-[11px] font-medium text-gray-400 dark:text-slate-400">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#6366F1] pulse-dot" />
+          AI Model • Gemini
+        </div>
+      </div>
+
+      {/* Main Grid: History | Input | Response */}
+      <div className="grid gap-6 lg:grid-cols-[220px_1fr_1fr]">
+        {/* LEFT: History Panel */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-20 max-h-[calc(100vh-8rem)] overflow-y-auto rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-4 transition-colors duration-200">
+            <ConversationSidebar
+              conversations={conversations}
+              selectedId={selectedConvId}
+              onSelect={handleSelectConversation}
+            />
+          </div>
+        </aside>
+
+        {/* CENTER + RIGHT: Agent UI */}
+        <div className="lg:col-span-2">
+          <SupportAgentUi
+            ticket={ticket}
+            onTicketChange={setTicket}
+            loading={loading}
+            result={result}
+            onAgentRun={startAgentRun}
+            onCreateTicket={handleCreateTicket}
           />
         </div>
-      </aside>
-
-      {/* Main */}
-      <div className="min-w-0 flex-1">
-        <SupportAgentUi
-          ticket={ticket}
-          onTicketChange={setTicket}
-          loading={loading}
-          result={result}
-          onAgentRun={startAgentRun}
-          onCreateTicket={handleCreateTicket}
-        />
       </div>
     </div>
   );
