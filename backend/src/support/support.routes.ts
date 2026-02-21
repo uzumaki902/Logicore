@@ -1,22 +1,18 @@
 import { Router } from "express";
-import { DraftSchema, Provider, RequestSchema } from "./support.schema";
+import { DraftSchema, RequestSchema } from "./support.schema";
 import { createAgent } from "langchain";
 import { MessagesValue, StateSchema } from "@langchain/langgraph";
 import { TavilyResult, tavilySearch } from "./tavily";
 
 const router = Router();
 
-function modelIdFor(provider: Provider) {
-  return provider === "openai"
-    ? "openai:gpt-4o-mini"
-    : "google-genai:gemini-2.5-flash-lite";
-}
+const GEMINI_MODEL = "google-genai:gemini-2.5-flash-lite";
 
 const AgentState = new StateSchema({ messages: MessagesValue });
 
-function makeAgent(provider: Provider) {
+function makeAgent() {
   return createAgent({
-    model: modelIdFor(provider),
+    model: GEMINI_MODEL,
     stateSchema: AgentState,
     tools: [],
     responseFormat: DraftSchema,
@@ -93,7 +89,7 @@ router.post("/run", async (req, res) => {
     return res.status(400).json({ error: "Invalid input" });
   }
 
-  const { provider, text } = parsed.data;
+  const { text } = parsed.data;
   const ticket = text.trim();
 
   // set some rules -> web search ? or dont ?
@@ -112,7 +108,7 @@ router.post("/run", async (req, res) => {
   }
 
   try {
-    const agent = makeAgent(provider);
+    const agent = makeAgent();
     const prompt = createPrompt({ ticket, searchResults });
 
     const out = await agent.invoke({

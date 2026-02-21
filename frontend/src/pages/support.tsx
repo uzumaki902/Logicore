@@ -3,14 +3,12 @@ import { apiPost } from "@/lib/api";
 import {
   ResponseSchema,
   type CallAgentPayload,
-  type Provider,
   type ResultState,
   type SupportResponse,
 } from "@/lib/support.types";
 import { useState } from "react";
 
 export default function Support() {
-  const [provider, setProvider] = useState<Provider>("openai");
   const [ticket, setTicket] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -48,7 +46,7 @@ export default function Support() {
 
     if (!getTicket) return;
 
-    const data = await callAgent({ provider, text: getTicket });
+    const data = await callAgent({ text: getTicket });
 
     if (!data) return;
 
@@ -60,8 +58,6 @@ export default function Support() {
 
   return (
     <SupportAgentUi
-      provider={provider}
-      onProviderChange={setProvider}
       ticket={ticket}
       onTicketChange={setTicket}
       loading={loading}

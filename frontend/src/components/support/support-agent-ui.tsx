@@ -1,10 +1,7 @@
-import type { Provider, ResultState } from "@/lib/support.types";
+import type { ResultState } from "@/lib/support.types";
 import { Button } from "../ui/button";
 
 type Props = {
-    provider: Provider;
-    onProviderChange: (p: Provider) => void;
-
     ticket: string;
     onTicketChange: (val: string) => void;
 
@@ -18,9 +15,7 @@ type Props = {
 function SupportAgentUi(props: Props) {
     const {
         result,
-        provider,
         loading,
-        onProviderChange,
         ticket,
         onTicketChange,
         onAgentRun,
@@ -61,20 +56,10 @@ function SupportAgentUi(props: Props) {
 
                     <div className="mt-5 grid gap-4">
                         <div className="space-y-2">
-                            <label className="text-xl font-semibold text-slate-700">
-                                Select Provider
-                            </label>
-                            <select
-                                value={provider}
-                                onChange={(event) =>
-                                    onProviderChange(event.target.value as Provider)
-                                }
-                                disabled={loading}
-                                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none focus:ring-4 focus:ring-indigo-100"
-                            >
-                                <option value={"openai"}>OpenAI</option>
-                                <option value={"gemini"}>Gemini</option>
-                            </select>
+                            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-medium text-slate-700 shadow-sm">
+                                <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
+                                Powered by Gemini
+                            </div>
                         </div>
 
                         <div className="space-y-2">

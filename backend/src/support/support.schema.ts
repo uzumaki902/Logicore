@@ -1,11 +1,6 @@
 import z from "zod";
 
-export const ProviderSchema = z.enum(["openai", "gemini"]);
-
-export type Provider = z.infer<typeof ProviderSchema>;
-
 export const RequestSchema = z.object({
-  provider: ProviderSchema,
   text: z.string().min(1),
 });
 
