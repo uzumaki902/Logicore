@@ -4,6 +4,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRouter from "./auth/auth.routes";
 import authE2ERouter from "./auth/e2e.routes";
+import supportRouter from "./support/support.routes";
+import { requireAuth } from "./auth/auth.middleware"; 
+
 async function main() {
   dotenv.config();
 
@@ -37,6 +40,9 @@ async function main() {
   });
   app.use("/auth", authRouter);
   app.use("/auth", authE2ERouter);
+  app.use("/api",requireAuth)
+  app.use("/api/support", supportRouter);
+  
 
   const port = process.env.PORT || 5000;
   app.listen(port, () => {
