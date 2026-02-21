@@ -1,0 +1,62 @@
+version: "2"
+type: backend
+tech_stack:
+  - language: TypeScript
+  - framework: Express.js
+  - database: MongoDB (via Mongoose)
+  - other: JWT authentication, LangChain AI integration, ScaleKit SDK
+features:
+  - name: Authentication API
+    description: JWT-based authentication with httpOnly session cookies
+    files:
+      - backend/src/auth/auth.routes.ts
+      - backend/src/auth/auth.middleware.ts
+      - backend/src/auth/e2e.routes.ts
+      - backend/src/auth/cookie.ts
+    endpoints:
+      - method: GET
+        path: /status
+        description: Health check endpoint
+        auth_required: false
+        response_schema:
+          "200": {"ok": true}
+      - method: GET
+        path: /auth/me
+        description: Get current user info
+        auth_required: true
+        response_schema:
+          "200": {"user": {"id": "string", "email": "string", "name": "string"}}
+          "401": Unauthorized error
+      - method: POST
+        path: /auth/e2e/login
+        description: Development-only E2E login endpoint
+        auth_required: false
+        request_schema:
+          body:
+            id: string
+            email: string
+            name: string
+        response_schema:
+          "200": {"ok": true}
+    depends_on: []
+  - name: Support API
+    description: AI-powered support functionality
+    files:
+      - backend/src/index.ts
+    endpoints:
+      - method: POST
+        path: /api/support/run
+        description: Execute AI support agent
+        auth_required: true
+        response_schema:
+          "200": Support response
+          "401": Unauthorized error
+    depends_on:
+      - Authentication
+known_limitations:
+  - issue: No input validation on e2e login endpoint
+    location: backend/src/auth/e2e.routes.ts
+    impact: Invalid data could be accepted without proper validation
+  - issue: CORS configuration depends on environment variables
+    location: backend/src/index.ts
+    impact: May block legitimate origins in production if not configured properly

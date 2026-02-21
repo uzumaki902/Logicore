@@ -1,0 +1,22 @@
+[
+  {
+    "id": "TC001",
+    "title": "health check endpoint returns ok status",
+    "description": "Verify that the GET /status endpoint returns a 200 status code with a response body containing {ok: true} without requiring authentication."
+  },
+  {
+    "id": "TC002",
+    "title": "unauthenticated get user info returns unauthorized",
+    "description": "Verify that the GET /auth/me endpoint returns a 401 status code when accessed without authentication."
+  },
+  {
+    "id": "TC003",
+    "title": "e2e login sets cookie and returns ok",
+    "description": "Verify that the POST /auth/e2e/login endpoint accepts the user credentials in the request body, returns a 200 status code with {ok: true} in the response body, and sets an authentication cookie."
+  },
+  {
+    "id": "TC004",
+    "title": "authenticated get user info returns user details",
+    "description": "Verify that the GET /auth/me endpoint returns a 200 status code with the authenticated user's id and email in the response body when accessed with valid authentication."
+  }
+]

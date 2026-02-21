@@ -1,0 +1,17 @@
+{
+  "status": "init",
+  "scope": "codebase",
+  "type": "backend",
+  "localEndpoint": "http://localhost:5000/",
+  "serverPort": 60273,
+  "executionArgs": {
+    "projectName": "Logicore",
+    "projectPath": "b:\\Logicore",
+    "testIds": [],
+    "additionalInstruction": "Generate and run exactly these 4 API tests:\n1. GET /status - Expected: 200 and JSON contains { \"ok\": true }\n2. GET /auth/me without any cookie - Expected: 401\n3. POST /auth/e2e/login with body {\"id\": \"e2e_user_1\", \"email\": \"e2e@test.local\", \"name\": \"E2E User\"} - Expected: 200 { \"ok\": true } and sets httpOnly session cookie\n4. GET /auth/me using the cookie from previous step - Expected: 200 and JSON contains user.id and user.email\n\nTarget base URL: http://localhost:5000",
+    "envs": {
+      "API_KEY": "sk-user-OH2yO9yaxTvmMRNngZmHjLXpIf8azb2TnYACTeW9w5PzP83sadLukiJwx-kgy2qey1X6E1KqRqfvqkpBqQm0e6JVMpwMvVjfYdhpansqevxlJHrXQoM9HFeLwZRV-QIfTFs"
+    }
+  },
+  "proxy": "http://f43a8968-d4ae-4866-b9d6-c4ab956b5c77:wcyzDXG0GnO4QyWquBz0Uc5JkqqcZE2Z@tun.testsprite.com:8080"
+}

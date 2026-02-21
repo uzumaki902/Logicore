@@ -33,7 +33,7 @@ async function main() {
   app.use(cookieParser());
 
   app.get("/status", (req, res) => {
-    res.json({ ok: "true", status: "UP" });
+    res.json({ ok: true, status: "UP" });
   });
   app.use("/auth", authRouter);
   app.use("/auth", authE2ERouter);

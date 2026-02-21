@@ -94,9 +94,11 @@ router.get("/callback", async (req, res) => {
 
 router.get("/me", requireAuth, (req, res) => {
   res.json({
-    user: req.user!.id,
-    email: req.user!.email,
-    name: req.user!.name,
+    user: {
+      id: req.user!.id,
+      email: req.user!.email,
+      name: req.user!.name,
+    }
   });
 });
 
