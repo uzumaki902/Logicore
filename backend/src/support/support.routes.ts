@@ -9,7 +9,7 @@ const router = Router();
 function modelIdFor(provider: Provider) {
   return provider === "openai"
     ? "openai:gpt-4o-mini"
-    : "google_genai:gemini-2.5-flash-lite";
+    : "google-genai:gemini-2.5-flash-lite";
 }
 
 const AgentState = new StateSchema({ messages: MessagesValue });
@@ -155,9 +155,10 @@ router.post("/run", async (req, res) => {
     }
 
     return res.json({ reply: draft.reply, sources: [] });
-  } catch {
+  } catch (err: any) {
     return res.status(500).json({
-      errorr: "Source agent failed",
+      error: "Source agent failed",
+      details: err?.message || String(err),
     });
   }
 });
