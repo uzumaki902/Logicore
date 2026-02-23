@@ -33,6 +33,5 @@ This approach moves beyond simple LLM interaction toward **system-oriented AI ap
 - Production deployment setup
 - Scalable API design
 
----
 
-## 🧠 Architecture
+  link:https://logicore-gtd6.vercel.app/
