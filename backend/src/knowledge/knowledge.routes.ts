@@ -94,6 +94,11 @@ const UploadSchema = z.object({
   content: z.string().min(10),
 });
 
+const PdfUploadSchema = z.object({
+  filename: z.string().min(1),
+  pdfBase64: z.string().min(10),
+});
+
 // Upload a document (accepts raw text)
 router.post("/upload", async (req, res) => {
   const user = req.user!;
@@ -139,6 +144,71 @@ router.post("/upload", async (req, res) => {
   processDocument(doc.id, member.org_id, content).catch(console.error);
 
   return res.json({ document: doc, message: "Document is being processed" });
+});
+
+// Upload a PDF file (accepts base64 encoded PDF)
+router.post("/upload-pdf", async (req, res) => {
+  const user = req.user!;
+  const parsed = PdfUploadSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+
+  const { filename, pdfBase64 } = parsed.data;
+
+  // Get user's org
+  const { data: member } = await supabase
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+
+  if (!member) {
+    return res.status(400).json({ error: "No organization found" });
+  }
+
+  try {
+    // Decode base64 and extract text
+    const buffer = Buffer.from(pdfBase64, "base64");
+    const pdfData = await pdf(buffer);
+    const textContent = pdfData.text;
+
+    if (!textContent || textContent.length < 10) {
+      return res.status(400).json({ error: "No readable text found in PDF" });
+    }
+
+    // Create document record
+    const { data: doc, error: docError } = await supabase
+      .from("documents")
+      .insert({
+        org_id: member.org_id,
+        filename,
+        file_size: textContent.length,
+        status: "processing",
+      })
+      .select()
+      .single();
+
+    if (docError || !doc) {
+      return res.status(500).json({ error: "Failed to create document" });
+    }
+
+    // Process in background
+    processDocument(doc.id, member.org_id, textContent).catch(console.error);
+
+    return res.json({
+      document: doc,
+      message: "PDF parsed and is being processed",
+      extractedLength: textContent.length,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      error: "Failed to parse PDF",
+      details: err?.message || String(err),
+    });
+  }
 });
 
 // Upload from URL (fetch content from a link, supports PDF + text + HTML)

@@ -29,6 +29,7 @@ export default function KnowledgeBase() {
     const [dragOver, setDragOver] = useState(false);
     const [uploadMode, setUploadMode] = useState<"file" | "url">("file");
     const [docUrl, setDocUrl] = useState("");
+    const [isPdf, setIsPdf] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -44,13 +45,33 @@ export default function KnowledgeBase() {
     }
 
     function readFile(file: File) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const text = e.target?.result as string;
-            setContent(text);
-            setFilename(file.name);
-        };
-        reader.readAsText(file);
+        setFilename(file.name);
+
+        if (file.name.endsWith(".pdf")) {
+            // Read PDF as base64
+            setIsPdf(true);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const arrayBuffer = e.target?.result as ArrayBuffer;
+                const base64 = btoa(
+                    new Uint8Array(arrayBuffer).reduce(
+                        (data, byte) => data + String.fromCharCode(byte),
+                        ""
+                    )
+                );
+                setContent(base64);
+            };
+            reader.readAsArrayBuffer(file);
+        } else {
+            // Read text files normally
+            setIsPdf(false);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const text = e.target?.result as string;
+                setContent(text);
+            };
+            reader.readAsText(file);
+        }
     }
 
     function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -69,14 +90,23 @@ export default function KnowledgeBase() {
         if (!filename.trim() || !content.trim()) return;
         setUploading(true);
 
-        const res = await apiPost("/api/knowledge/upload", {
-            filename: filename.trim(),
-            content: content.trim(),
-        });
+        let res;
+        if (isPdf) {
+            res = await apiPost("/api/knowledge/upload-pdf", {
+                filename: filename.trim(),
+                pdfBase64: content,
+            });
+        } else {
+            res = await apiPost("/api/knowledge/upload", {
+                filename: filename.trim(),
+                content: content.trim(),
+            });
+        }
 
         if (res.ok) {
             setFilename("");
             setContent("");
+            setIsPdf(false);
             // Poll for status updates
             setTimeout(fetchDocuments, 1000);
             setTimeout(fetchDocuments, 3000);
@@ -192,7 +222,7 @@ export default function KnowledgeBase() {
                                 <input
                                     ref={fileInputRef}
                                     type="file"
-                                    accept=".txt,.md,.csv,.json,.log,.html,.xml"
+                                    accept=".txt,.md,.csv,.json,.log,.html,.xml,.pdf"
                                     onChange={handleFileSelect}
                                     className="hidden"
                                 />
