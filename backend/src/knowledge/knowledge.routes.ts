@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { supabase } from "../db/supabase";
 import z from "zod";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pdf = require("pdf-parse");
 
 const router = Router();
 
@@ -137,6 +139,106 @@ router.post("/upload", async (req, res) => {
   processDocument(doc.id, member.org_id, content).catch(console.error);
 
   return res.json({ document: doc, message: "Document is being processed" });
+});
+
+// Upload from URL (fetch content from a link, supports PDF + text + HTML)
+const UrlUploadSchema = z.object({
+  url: z.string().url(),
+});
+
+router.post("/upload-url", async (req, res) => {
+  const user = req.user!;
+  const parsed = UrlUploadSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Invalid URL" });
+  }
+
+  const { url } = parsed.data;
+
+  // Get user's org
+  const { data: member } = await supabase
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", user.id)
+    .limit(1)
+    .single();
+
+  if (!member) {
+    return res.status(400).json({ error: "No organization found" });
+  }
+
+  try {
+    // Fetch the URL
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Logicore-KB/1.0" },
+    });
+
+    if (!response.ok) {
+      return res
+        .status(400)
+        .json({ error: `Failed to fetch URL: ${response.status}` });
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    let textContent = "";
+    const filename = url.split("/").pop()?.split("?")[0] || "document";
+
+    if (contentType.includes("application/pdf")) {
+      // Handle PDF
+      const buffer = Buffer.from(await response.arrayBuffer());
+      const pdfData = await pdf(buffer);
+      textContent = pdfData.text;
+    } else if (contentType.includes("text/html")) {
+      // Handle HTML - strip tags
+      const html = await response.text();
+      textContent = html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    } else {
+      // Plain text, markdown, etc.
+      textContent = await response.text();
+    }
+
+    if (!textContent || textContent.length < 10) {
+      return res
+        .status(400)
+        .json({ error: "No readable content found at URL" });
+    }
+
+    // Create document record
+    const { data: doc, error: docError } = await supabase
+      .from("documents")
+      .insert({
+        org_id: member.org_id,
+        filename,
+        file_size: textContent.length,
+        status: "processing",
+      })
+      .select()
+      .single();
+
+    if (docError || !doc) {
+      return res.status(500).json({ error: "Failed to create document" });
+    }
+
+    // Process in background
+    processDocument(doc.id, member.org_id, textContent).catch(console.error);
+
+    return res.json({
+      document: doc,
+      message: "Document fetched and is being processed",
+      extractedLength: textContent.length,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      error: "Failed to process URL",
+      details: err?.message || String(err),
+    });
+  }
 });
 
 // Background processing: chunk text and generate embeddings

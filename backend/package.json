@@ -24,6 +24,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "langchain": "^1.2.25",
+    "pdf-parse": "^2.4.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {

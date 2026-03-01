@@ -1,6 +1,6 @@
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 type Document = {
     id: string;
@@ -26,6 +26,10 @@ export default function KnowledgeBase() {
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [searching, setSearching] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
+    const [uploadMode, setUploadMode] = useState<"file" | "url">("file");
+    const [docUrl, setDocUrl] = useState("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchDocuments();
@@ -37,6 +41,28 @@ export default function KnowledgeBase() {
             setDocuments(res.data.documents);
         }
         setLoading(false);
+    }
+
+    function readFile(file: File) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target?.result as string;
+            setContent(text);
+            setFilename(file.name);
+        };
+        reader.readAsText(file);
+    }
+
+    function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (file) readFile(file);
+    }
+
+    function handleDrop(e: React.DragEvent) {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) readFile(file);
     }
 
     async function handleUpload() {
@@ -52,6 +78,24 @@ export default function KnowledgeBase() {
             setFilename("");
             setContent("");
             // Poll for status updates
+            setTimeout(fetchDocuments, 1000);
+            setTimeout(fetchDocuments, 3000);
+            setTimeout(fetchDocuments, 6000);
+            fetchDocuments();
+        }
+        setUploading(false);
+    }
+
+    async function handleUrlUpload() {
+        if (!docUrl.trim()) return;
+        setUploading(true);
+
+        const res = await apiPost("/api/knowledge/upload-url", {
+            url: docUrl.trim(),
+        });
+
+        if (res.ok) {
+            setDocUrl("");
             setTimeout(fetchDocuments, 1000);
             setTimeout(fetchDocuments, 3000);
             setTimeout(fetchDocuments, 6000);
@@ -115,48 +159,134 @@ export default function KnowledgeBase() {
                     <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Upload Document
                     </h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-xs font-medium text-gray-500 dark:text-slate-400">
-                                Document Name
-                            </label>
-                            <input
-                                type="text"
-                                value={filename}
-                                onChange={(e) => setFilename(e.target.value)}
-                                placeholder="e.g., refund-policy.txt"
-                                className="mt-1 w-full rounded-xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#0B0F14] px-4 py-2.5 text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200"
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-medium text-gray-500 dark:text-slate-400">
-                                Document Content
-                            </label>
-                            <textarea
-                                value={content}
-                                onChange={(e) => setContent(e.target.value)}
-                                placeholder="Paste the document content here..."
-                                className="mt-1 min-h-36 w-full rounded-xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#0B0F14] px-4 py-3 text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200 resize-none"
-                            />
-                            <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
-                                Text will be chunked and embedded for semantic search.
-                            </p>
-                        </div>
-                        <Button
-                            onClick={handleUpload}
-                            disabled={uploading || !filename.trim() || !content.trim()}
-                            className="h-10 w-full rounded-xl bg-[#6366F1] text-white font-medium hover:bg-[#7C83FF] transition-all duration-200 hover:scale-[1.01] press-scale disabled:opacity-60 disabled:cursor-not-allowed"
+
+                    {/* Mode Tabs */}
+                    <div className="flex gap-1 rounded-lg bg-gray-100 dark:bg-[#0B0F14] p-1 mb-4">
+                        <button
+                            onClick={() => setUploadMode("file")}
+                            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${uploadMode === "file" ? "bg-white dark:bg-[#1A2233] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"}`}
                         >
-                            {uploading ? (
-                                <span className="flex items-center gap-2">
-                                    <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                                    Uploading...
-                                </span>
-                            ) : (
-                                "📄 Upload Document"
-                            )}
-                        </Button>
+                            📁 File Upload
+                        </button>
+                        <button
+                            onClick={() => setUploadMode("url")}
+                            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${uploadMode === "url" ? "bg-white dark:bg-[#1A2233] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"}`}
+                        >
+                            🔗 URL Import
+                        </button>
                     </div>
+
+                    {uploadMode === "file" ? (
+                        <div className="space-y-4">
+                            {/* Drag & Drop / File Select Zone */}
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                                onDragLeave={() => setDragOver(false)}
+                                onDrop={handleDrop}
+                                className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 cursor-pointer transition-all duration-200 ${dragOver
+                                    ? "border-[#6366F1] bg-[#6366F1]/5"
+                                    : "border-gray-300 dark:border-[#1F2937] hover:border-[#6366F1]/50 hover:bg-gray-50 dark:hover:bg-[#1A2233]/50"
+                                    }`}
+                            >
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".txt,.md,.csv,.json,.log,.html,.xml"
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                />
+                                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 dark:bg-[#1A2233]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 dark:text-slate-500">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                    </svg>
+                                </div>
+                                <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
+                                    {content ? `✅ ${filename}` : "Click to select or drag & drop"}
+                                </p>
+                                <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
+                                    .txt, .md, .csv, .json, .log, .html, .xml
+                                </p>
+                            </div>
+
+                            {/* Document Name (auto-filled or manual) */}
+                            <div>
+                                <label className="text-xs font-medium text-gray-500 dark:text-slate-400">
+                                    Document Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={filename}
+                                    onChange={(e) => setFilename(e.target.value)}
+                                    placeholder="Auto-filled from file, or type manually"
+                                    className="mt-1 w-full rounded-xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#0B0F14] px-4 py-2.5 text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200"
+                                />
+                            </div>
+
+                            {/* Content preview / manual paste */}
+                            <div>
+                                <label className="text-xs font-medium text-gray-500 dark:text-slate-400">
+                                    Content {content ? `(${(content.length / 1024).toFixed(1)}KB)` : "— paste or upload file"}
+                                </label>
+                                <textarea
+                                    value={content}
+                                    onChange={(e) => setContent(e.target.value)}
+                                    placeholder="Content auto-fills when you upload a file, or paste manually..."
+                                    className="mt-1 min-h-24 w-full rounded-xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#0B0F14] px-4 py-3 text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200 resize-none"
+                                />
+                            </div>
+
+                            <Button
+                                onClick={handleUpload}
+                                disabled={uploading || !filename.trim() || !content.trim()}
+                                className="h-10 w-full rounded-xl bg-[#6366F1] text-white font-medium hover:bg-[#7C83FF] transition-all duration-200 hover:scale-[1.01] press-scale disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {uploading ? (
+                                    <span className="flex items-center gap-2">
+                                        <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                        Uploading & Embedding...
+                                    </span>
+                                ) : (
+                                    "📄 Upload Document"
+                                )}
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-xs font-medium text-gray-500 dark:text-slate-400">
+                                    Document URL
+                                </label>
+                                <input
+                                    type="url"
+                                    value={docUrl}
+                                    onChange={(e) => setDocUrl(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && handleUrlUpload()}
+                                    placeholder="https://example.com/docs/refund-policy.pdf"
+                                    className="mt-1 w-full rounded-xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#0B0F14] px-4 py-2.5 text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200"
+                                />
+                                <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
+                                    Supports PDF links, web pages, and plain text files.
+                                </p>
+                            </div>
+                            <Button
+                                onClick={handleUrlUpload}
+                                disabled={uploading || !docUrl.trim()}
+                                className="h-10 w-full rounded-xl bg-[#6366F1] text-white font-medium hover:bg-[#7C83FF] transition-all duration-200 hover:scale-[1.01] press-scale disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {uploading ? (
+                                    <span className="flex items-center gap-2">
+                                        <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                        Fetching & Embedding...
+                                    </span>
+                                ) : (
+                                    "🔗 Import from URL"
+                                )}
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Search Test Section */}
