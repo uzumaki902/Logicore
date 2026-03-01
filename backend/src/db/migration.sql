@@ -29,6 +29,7 @@ create table conversations (
   priority text default 'medium',
   category text default 'general',
   confidence real,
+  used_kb boolean default false,
   created_at timestamptz default now()
 );
 

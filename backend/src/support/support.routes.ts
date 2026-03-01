@@ -220,6 +220,7 @@ router.post("/run", async (req, res) => {
             priority: draft.priority,
             category: draft.category,
             confidence: draft.confidence,
+            used_kb: kbResults.length > 0,
           })
           .select("id")
           .single();
@@ -249,6 +250,7 @@ router.post("/run", async (req, res) => {
         category: draft.category,
         confidence: draft.confidence,
         autoEscalated: status === "needs_review",
+        usedKb: kbResults.length > 0,
       });
     }
 

@@ -68,12 +68,20 @@ router.get("/stats", async (req, res) => {
     .order("created_at", { ascending: false })
     .limit(5);
 
+  // KB resolved count
+  const { count: kbResolved } = await supabase
+    .from("conversations")
+    .select("*", { count: "exact", head: true })
+    .eq("org_id", orgId)
+    .eq("used_kb", true);
+
   return res.json({
     totalQueries: totalQueries || 0,
     resolvedByAi: resolvedByAi || 0,
     escalated: escalated || 0,
     aiSatisfaction,
     totalFeedback: totalFeedback || 0,
+    kbResolved: kbResolved || 0,
     recentActivity: recentConversations || [],
   });
 });
