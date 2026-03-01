@@ -7,6 +7,8 @@ import authE2ERouter from "./auth/e2e.routes";
 import supportRouter from "./support/support.routes";
 import orgRouter from "./org/org.routes";
 import ticketRouter from "./support/ticket.routes";
+import feedbackRouter from "./support/feedback.routes";
+import knowledgeRouter from "./knowledge/knowledge.routes";
 import dashboardRouter from "./dashboard/dashboard.routes";
 import { requireAuth } from "./auth/auth.middleware";
 
@@ -47,6 +49,8 @@ async function main() {
   app.use("/api/org", orgRouter);
   app.use("/api/support", supportRouter);
   app.use("/api/support", ticketRouter);
+  app.use("/api/support", feedbackRouter);
+  app.use("/api/knowledge", knowledgeRouter);
   app.use("/api/dashboard", dashboardRouter);
 
   const port = process.env.PORT || 5000;

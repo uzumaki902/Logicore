@@ -5,6 +5,7 @@ import Login from "./pages/login";
 import Support from "./pages/support";
 import OrgSetup from "./pages/org-setup";
 import Dashboard from "./pages/dashboard";
+import KnowledgeBase from "./pages/knowledge";
 import { AuthGate } from "./context/auth";
 
 export default function App() {
@@ -34,6 +35,14 @@ export default function App() {
           element={
             <AuthGate>
               <Dashboard />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/knowledge"
+          element={
+            <AuthGate>
+              <KnowledgeBase />
             </AuthGate>
           }
         />

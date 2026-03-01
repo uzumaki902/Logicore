@@ -4,6 +4,7 @@ import { createAgent } from "langchain";
 import { MessagesValue, StateSchema } from "@langchain/langgraph";
 import { TavilyResult, tavilySearch } from "./tavily";
 import { supabase } from "../db/supabase";
+import { knowledgeBaseSearch } from "../knowledge/knowledge.routes";
 
 const router = Router();
 
@@ -44,23 +45,49 @@ function formatSearchResults(results: TavilyResult[]) {
     .join("\n\n");
 }
 
-function createPrompt(args: { ticket: string; searchResults: TavilyResult[] }) {
+function createPrompt(args: {
+  ticket: string;
+  searchResults: TavilyResult[];
+  kbResults?: { chunk_text: string; filename: string }[];
+}) {
   const hasSearchResult = args.searchResults.length > 0;
+  const hasKbResults = args.kbResults && args.kbResults.length > 0;
+
+  const kbSection = hasKbResults
+    ? args
+        .kbResults!.map((r, i) => `#${i + 1} [${r.filename}]\n${r.chunk_text}`)
+        .join("\n\n")
+    : "none";
 
   return [
     "You are a B2B support desk agent.",
-    "Write a customer-ready reply.",
+    "Write a customer-ready reply AND classify the ticket.",
     "",
     "Output ONLY strict JSON with this exact shape:",
-    '{ "reply": string, "sources": string[] }',
+    '{ "reply": string, "sources": string[], "priority": string, "category": string, "confidence": number }',
     "",
-    "Rules:",
+    "Classification rules:",
+    '- priority: one of "low", "medium", "high", "critical"',
+    "  - low = general questions, feedback",
+    "  - medium = feature questions, how-to guides",
+    "  - high = service disruptions, integration failures",
+    "  - critical = data loss, security issues, complete outages",
+    '- category: one of "billing", "technical", "account", "general"',
+    "- confidence: 0-100, how confident you are in your reply",
+    "",
+    "Reply rules:",
     "- Be polite, clear, short paragraphs.",
     "- Ask for missing info if needed.",
     "- Do NOT make strong promises (no guarantees).",
+    "- Prioritize Internal Knowledge Base results when available.",
     hasSearchResult
       ? "- If you used any webSearch result, sources[] MUST contain 1–3 URLs FROM the provided webSearch results."
-      : "- sources[] MUST be [].",
+      : hasKbResults
+        ? "- sources[] MUST be []. Internal knowledge base results are not URLs."
+        : "- sources[] MUST be [].",
+    "",
+    "Internal Knowledge Base results:",
+    kbSection,
     "",
     "webSearch results:",
     formatSearchResults(args.searchResults),
@@ -108,9 +135,33 @@ router.post("/run", async (req, res) => {
     searchResults = [];
   }
 
+  // Get user's org for KB search
+  let orgId: string | null = null;
+  const { data: member } = await supabase
+    .from("org_members")
+    .select("org_id")
+    .eq("user_id", req.user!.id)
+    .limit(1)
+    .single();
+  orgId = member?.org_id || null;
+
+  // Search knowledge base
+  let kbResults: {
+    chunk_text: string;
+    filename: string;
+    similarity: number;
+  }[] = [];
+  if (orgId) {
+    try {
+      kbResults = await knowledgeBaseSearch(ticket, orgId);
+    } catch {
+      kbResults = [];
+    }
+  }
+
   try {
     const agent = makeAgent();
-    const prompt = createPrompt({ ticket, searchResults });
+    const prompt = createPrompt({ ticket, searchResults, kbResults });
 
     const out = await agent.invoke({
       messages: [{ role: "user", content: prompt }],
@@ -150,32 +201,55 @@ router.post("/run", async (req, res) => {
 
       // Save conversation to DB
       let conversationId: string | null = null;
-      const { data: member } = await supabase
-        .from("org_members")
-        .select("org_id")
-        .eq("user_id", req.user!.id)
-        .limit(1)
-        .single();
 
-      if (member) {
+      // Determine status based on confidence
+      const status = draft.confidence < 70 ? "needs_review" : "resolved";
+
+      if (orgId) {
         const title = ticket.slice(0, 60) + (ticket.length > 60 ? "..." : "");
         const { data: conv } = await supabase
           .from("conversations")
           .insert({
-            org_id: member.org_id,
+            org_id: orgId,
             user_id: req.user!.id,
             title,
             ticket_text: ticket,
             reply: draft.reply,
             sources,
-            status: "resolved",
+            status,
+            priority: draft.priority,
+            category: draft.category,
+            confidence: draft.confidence,
           })
           .select("id")
           .single();
         conversationId = conv?.id || null;
+
+        // Auto-create ticket for high/critical priority
+        if (
+          conversationId &&
+          (draft.priority === "high" || draft.priority === "critical")
+        ) {
+          await supabase.from("tickets").insert({
+            org_id: orgId,
+            conversation_id: conversationId,
+            user_id: req.user!.id,
+            title,
+            status: "open",
+            priority: draft.priority,
+          });
+        }
       }
 
-      return res.json({ reply: draft.reply, sources, conversationId });
+      return res.json({
+        reply: draft.reply,
+        sources,
+        conversationId,
+        priority: draft.priority,
+        category: draft.category,
+        confidence: draft.confidence,
+        autoEscalated: status === "needs_review",
+      });
     }
 
     return res.json({ reply: draft.reply, sources: [], conversationId: null });

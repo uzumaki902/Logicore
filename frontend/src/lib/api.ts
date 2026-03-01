@@ -44,3 +44,6 @@ export function apiPost<TData = unknown>(path: string, body?: unknown) {
     body: body ? JSON.stringify(body) : undefined,
   });
 }
+export function apiDelete<TData = unknown>(path: string) {
+  return apiCommonRequest<TData>(path, { method: "DELETE" });
+}

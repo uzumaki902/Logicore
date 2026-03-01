@@ -1,6 +1,7 @@
 import type { ResultState } from "@/lib/support.types";
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
+import { apiPost } from "@/lib/api";
 
 type AgentStep = {
     icon: string;
@@ -13,6 +14,7 @@ type Props = {
     onTicketChange: (val: string) => void;
     loading: boolean;
     result: ResultState | null;
+    conversationId: string | null;
     onAgentRun: () => void;
     onCreateTicket: () => void;
 };
@@ -59,8 +61,8 @@ function AgentThinking({ loading }: { loading: boolean }) {
                 <div
                     key={i}
                     className={`flex items-center gap-2.5 text-xs transition-all duration-300 ${step.done
-                            ? "text-gray-400 dark:text-slate-500"
-                            : "text-gray-700 dark:text-slate-200"
+                        ? "text-gray-400 dark:text-slate-500"
+                        : "text-gray-700 dark:text-slate-200"
                         }`}
                     style={{ animationDelay: `${i * 100}ms` }}
                 >
@@ -78,12 +80,64 @@ function AgentThinking({ loading }: { loading: boolean }) {
     );
 }
 
+/* ── Feedback Buttons ── */
+function FeedbackButtons({ conversationId }: { conversationId: string }) {
+    const [submitted, setSubmitted] = useState<1 | -1 | null>(null);
+    const [sending, setSending] = useState(false);
+
+    async function handleFeedback(rating: 1 | -1) {
+        setSending(true);
+        const res = await apiPost("/api/support/feedback", {
+            conversationId,
+            rating,
+        });
+        if (res.ok) {
+            setSubmitted(rating);
+        }
+        setSending(false);
+    }
+
+    if (submitted !== null) {
+        return (
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
+                <span className="text-sm">{submitted === 1 ? "👍" : "👎"}</span>
+                <span>Thanks for your feedback!</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex items-center gap-3">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-slate-500">
+                Rate this response
+            </span>
+            <button
+                onClick={() => handleFeedback(1)}
+                disabled={sending}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] text-sm hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all duration-200 disabled:opacity-50"
+                title="Thumbs up"
+            >
+                👍
+            </button>
+            <button
+                onClick={() => handleFeedback(-1)}
+                disabled={sending}
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] text-sm hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-300 dark:hover:border-red-700 transition-all duration-200 disabled:opacity-50"
+                title="Thumbs down"
+            >
+                👎
+            </button>
+        </div>
+    );
+}
+
 /* ── Support Agent UI ── */
 function SupportAgentUi(props: Props) {
     const {
         result,
         loading,
         ticket,
+        conversationId,
         onTicketChange,
         onAgentRun,
         onCreateTicket,
@@ -175,6 +229,49 @@ function SupportAgentUi(props: Props) {
                                 {result.reply}
                             </div>
                         </div>
+
+                        {/* Classification Badges */}
+                        {result.priority && (
+                            <div className="rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-4 transition-colors duration-200">
+                                <h3 className="mb-3 text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-slate-500">
+                                    AI Classification
+                                </h3>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold ${result.priority === "critical" ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                                            result.priority === "high" ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" :
+                                                result.priority === "medium" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                                    "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                        }`}>
+                                        {result.priority === "critical" ? "🔴" : result.priority === "high" ? "🟠" : result.priority === "medium" ? "🟡" : "🟢"}
+                                        {result.priority.charAt(0).toUpperCase() + result.priority.slice(1)} Priority
+                                    </span>
+                                    <span className="inline-flex items-center rounded-full bg-[#6366F1]/10 px-2.5 py-1 text-[11px] font-semibold text-[#6366F1]">
+                                        {result.category?.charAt(0).toUpperCase()}{result.category?.slice(1)}
+                                    </span>
+                                    {result.confidence !== undefined && (
+                                        <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${result.confidence >= 80 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
+                                                result.confidence >= 60 ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                                    "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                            }`}>
+                                            {result.confidence}% confidence
+                                        </span>
+                                    )}
+                                </div>
+                                {result.autoEscalated && (
+                                    <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+                                        <span>⚠️</span>
+                                        <span>Auto-escalated — AI confidence below threshold. Marked for human review.</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Feedback Buttons */}
+                        {conversationId && (
+                            <div className="rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-4 transition-colors duration-200">
+                                <FeedbackButtons conversationId={conversationId} />
+                            </div>
+                        )}
 
                         <div className="flex gap-3">
                             <Button

@@ -43,10 +43,38 @@ router.get("/stats", async (req, res) => {
     .select("*", { count: "exact", head: true })
     .eq("org_id", orgId);
 
+  // Feedback stats
+  const { count: totalFeedback } = await supabase
+    .from("feedback")
+    .select("*", { count: "exact", head: true })
+    .eq("org_id", orgId);
+
+  const { count: positiveFeedback } = await supabase
+    .from("feedback")
+    .select("*", { count: "exact", head: true })
+    .eq("org_id", orgId)
+    .eq("rating", 1);
+
+  const aiSatisfaction =
+    totalFeedback && totalFeedback > 0
+      ? Math.round(((positiveFeedback || 0) / totalFeedback) * 100)
+      : null;
+
+  // Recent conversations for activity feed
+  const { data: recentConversations } = await supabase
+    .from("conversations")
+    .select("title, status, created_at")
+    .eq("org_id", orgId)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
   return res.json({
     totalQueries: totalQueries || 0,
     resolvedByAi: resolvedByAi || 0,
     escalated: escalated || 0,
+    aiSatisfaction,
+    totalFeedback: totalFeedback || 0,
+    recentActivity: recentConversations || [],
   });
 });
 

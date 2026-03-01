@@ -20,8 +20,8 @@ export default function CommonLayout() {
   function navClass(path: string) {
     const active = location.pathname === path;
     return `rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200 ${active
-        ? "bg-gray-200 dark:bg-slate-800 text-gray-900 dark:text-white"
-        : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800/50"
+      ? "bg-gray-200 dark:bg-slate-800 text-gray-900 dark:text-white"
+      : "text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800/50"
       }`;
   }
 
@@ -50,6 +50,9 @@ export default function CommonLayout() {
                 </Link>
                 <Link to="/dashboard" className={`${navClass("/dashboard")} no-underline`}>
                   Dashboard
+                </Link>
+                <Link to="/knowledge" className={`${navClass("/knowledge")} no-underline`}>
+                  Knowledge Base
                 </Link>
               </nav>
             )}

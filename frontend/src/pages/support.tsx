@@ -70,7 +70,14 @@ export default function Support() {
     const data = await callAgent({ text: getTicket });
     if (!data) return;
 
-    setResult({ reply: data.reply, sources: data.sources });
+    setResult({
+      reply: data.reply,
+      sources: data.sources,
+      priority: data.priority,
+      category: data.category,
+      confidence: data.confidence,
+      autoEscalated: data.autoEscalated,
+    });
     setConversationId(data.conversationId);
     fetchHistory();
   }
@@ -140,6 +147,7 @@ export default function Support() {
             onTicketChange={setTicket}
             loading={loading}
             result={result}
+            conversationId={conversationId}
             onAgentRun={startAgentRun}
             onCreateTicket={handleCreateTicket}
           />

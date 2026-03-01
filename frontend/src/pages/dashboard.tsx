@@ -5,11 +5,9 @@ type Stats = {
     totalQueries: number;
     resolvedByAi: number;
     escalated: number;
-};
-
-type ActivityItem = {
-    title: string;
-    status: "resolved" | "pending" | "drafted";
+    aiSatisfaction: number | null;
+    totalFeedback: number;
+    recentActivity: { title: string; status: string; created_at: string }[];
 };
 
 export default function Dashboard() {
@@ -27,15 +25,13 @@ export default function Dashboard() {
         fetchStats();
     }, []);
 
-    const activeThreads = stats
-        ? Math.max(0, stats.totalQueries - stats.resolvedByAi - stats.escalated)
-        : 0;
+
 
     const cards = [
         {
             label: "Total Support Requests",
             value: stats?.totalQueries ?? 0,
-            trend: "+3 today",
+            trend: `${stats?.totalFeedback ?? 0} rated`,
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -69,29 +65,25 @@ export default function Dashboard() {
             accent: "#F59E0B",
         },
         {
-            label: "Active Support Threads",
-            value: activeThreads,
-            trend: "In progress",
+            label: "AI Satisfaction",
+            value: stats?.aiSatisfaction !== null && stats?.aiSatisfaction !== undefined
+                ? `${stats.aiSatisfaction}%`
+                : "—",
+            trend: `${stats?.totalFeedback ?? 0} ratings`,
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                    <polyline points="17 6 23 6 23 12" />
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                 </svg>
             ),
             accent: "#8B5CF6",
         },
     ];
 
-    /* Mock recent activity derived from stats */
-    const recentActivity: ActivityItem[] = [
-        { title: "Login issue — password reset", status: "resolved" },
-        { title: "Webhook failure — endpoint timeout", status: "pending" },
-        { title: "Billing request — plan upgrade", status: "drafted" },
-    ];
-
     const statusConfig: Record<string, { color: string; label: string }> = {
         resolved: { color: "bg-emerald-500", label: "Resolved" },
         pending: { color: "bg-amber-400", label: "Pending" },
+        escalated: { color: "bg-red-400", label: "Escalated" },
+        needs_review: { color: "bg-orange-400", label: "Needs Review" },
         drafted: { color: "bg-[#6366F1]", label: "AI Drafted" },
     };
 
@@ -159,9 +151,9 @@ export default function Dashboard() {
                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                     Recent Support Activity
                 </h2>
-                {stats && stats.totalQueries > 0 ? (
+                {stats && stats.recentActivity && stats.recentActivity.length > 0 ? (
                     <div className="space-y-3">
-                        {recentActivity.map((item, i) => {
+                        {stats.recentActivity.map((item, i) => {
                             const sc = statusConfig[item.status] ?? statusConfig.pending;
                             return (
                                 <div
@@ -207,6 +199,12 @@ export default function Dashboard() {
                                 value: stats.totalQueries > 0
                                     ? `${Math.round((stats.escalated / stats.totalQueries) * 100)}%`
                                     : "0%",
+                            },
+                            {
+                                label: "AI Satisfaction Score",
+                                value: stats.aiSatisfaction !== null
+                                    ? `${stats.aiSatisfaction}% (${stats.totalFeedback} ratings)`
+                                    : "No ratings yet",
                             },
                             {
                                 label: "Average Response Time",
