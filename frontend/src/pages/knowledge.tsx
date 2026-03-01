@@ -11,22 +11,12 @@ type Document = {
     created_at: string;
 };
 
-type SearchResult = {
-    chunk_text: string;
-    filename: string;
-    similarity: number;
-};
-
 export default function KnowledgeBase() {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [filename, setFilename] = useState("");
     const [content, setContent] = useState("");
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-    const [searching, setSearching] = useState(false);
-    const [searchError, setSearchError] = useState("");
     const [dragOver, setDragOver] = useState(false);
     const [uploadMode, setUploadMode] = useState<"file" | "url">("file");
     const [docUrl, setDocUrl] = useState("");
@@ -140,29 +130,6 @@ export default function KnowledgeBase() {
         if (res.ok) {
             setDocuments((prev) => prev.filter((d) => d.id !== id));
         }
-    }
-
-    async function handleSearch() {
-        if (!searchQuery.trim()) return;
-        setSearching(true);
-        setSearchError("");
-        setSearchResults([]);
-        try {
-            const res = await apiPost<{ results: SearchResult[]; error?: string }>("/api/knowledge/search", {
-                query: searchQuery.trim(),
-            });
-            if (res.ok && res.data.results) {
-                setSearchResults(res.data.results);
-                if (res.data.results.length === 0) {
-                    setSearchError("No matching results found. Make sure your document status is 'Ready'.");
-                }
-            } else {
-                setSearchError((res.data as any)?.error || `Search failed (status ${res.status})`);
-            }
-        } catch (err: any) {
-            setSearchError(err?.message || "Network error — is the backend running?");
-        }
-        setSearching(false);
     }
 
     const statusConfig: Record<string, { color: string; label: string }> = {
@@ -331,67 +298,6 @@ export default function KnowledgeBase() {
                     )}
                 </div>
 
-                {/* Search Test Section */}
-                <div className="rounded-2xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#111827] p-6 transition-colors duration-200">
-                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Test Search
-                    </h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-xs font-medium text-gray-500 dark:text-slate-400">
-                                Search Query
-                            </label>
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                                placeholder="e.g., how to get a refund"
-                                className="mt-1 w-full rounded-xl border border-gray-200 dark:border-[#1F2937] bg-white dark:bg-[#0B0F14] px-4 py-2.5 text-sm text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 outline-none focus:border-[#6366F1] focus:ring-2 focus:ring-[#6366F1]/20 transition-all duration-200"
-                            />
-                        </div>
-                        <Button
-                            onClick={handleSearch}
-                            disabled={searching || !searchQuery.trim()}
-                            variant="outline"
-                            className="h-10 w-full rounded-xl border-gray-200 dark:border-[#1F2937] text-sm font-medium text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-[#1A2233] transition-all duration-200"
-                        >
-                            {searching ? "Searching..." : "🔍 Search Knowledge Base"}
-                        </Button>
-
-                        {searchError && (
-                            <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-3 py-2 text-xs text-red-600 dark:text-red-400">
-                                ⚠️ {searchError}
-                            </div>
-                        )}
-
-                        {searchResults.length > 0 && (
-                            <div className="space-y-2 mt-2">
-                                <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-slate-500">
-                                    Results ({searchResults.length})
-                                </p>
-                                {searchResults.map((result, i) => (
-                                    <div
-                                        key={i}
-                                        className="rounded-lg bg-gray-50 dark:bg-[#0B0F14]/50 p-3 text-sm"
-                                    >
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="text-xs font-medium text-[#6366F1]">
-                                                {result.filename}
-                                            </span>
-                                            <span className="text-[10px] text-gray-400 dark:text-slate-500">
-                                                {(result.similarity * 100).toFixed(0)}% match
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-gray-600 dark:text-slate-300 line-clamp-3">
-                                            {result.chunk_text}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
             </div>
 
             {/* Documents List */}
