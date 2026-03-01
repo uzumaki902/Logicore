@@ -198,63 +198,61 @@ router.post("/run", async (req, res) => {
           allowedSources: allowed.slice(0, 3),
         });
       }
-
-      // Save conversation to DB
-      let conversationId: string | null = null;
-
-      // Determine status based on confidence
-      const status = draft.confidence < 70 ? "needs_review" : "resolved";
-
-      if (orgId) {
-        const title = ticket.slice(0, 60) + (ticket.length > 60 ? "..." : "");
-        const { data: conv } = await supabase
-          .from("conversations")
-          .insert({
-            org_id: orgId,
-            user_id: req.user!.id,
-            title,
-            ticket_text: ticket,
-            reply: draft.reply,
-            sources,
-            status,
-            priority: draft.priority,
-            category: draft.category,
-            confidence: draft.confidence,
-            used_kb: kbResults.length > 0,
-          })
-          .select("id")
-          .single();
-        conversationId = conv?.id || null;
-
-        // Auto-create ticket for high/critical priority
-        if (
-          conversationId &&
-          (draft.priority === "high" || draft.priority === "critical")
-        ) {
-          await supabase.from("tickets").insert({
-            org_id: orgId,
-            conversation_id: conversationId,
-            user_id: req.user!.id,
-            title,
-            status: "open",
-            priority: draft.priority,
-          });
-        }
-      }
-
-      return res.json({
-        reply: draft.reply,
-        sources,
-        conversationId,
-        priority: draft.priority,
-        category: draft.category,
-        confidence: draft.confidence,
-        autoEscalated: status === "needs_review",
-        usedKb: kbResults.length > 0,
-      });
     }
 
-    return res.json({ reply: draft.reply, sources: [], conversationId: null });
+    // Save conversation to DB (always, not just for web search)
+    let conversationId: string | null = null;
+
+    // Determine status based on confidence
+    const status = draft.confidence < 70 ? "needs_review" : "resolved";
+
+    if (orgId) {
+      const title = ticket.slice(0, 60) + (ticket.length > 60 ? "..." : "");
+      const { data: conv } = await supabase
+        .from("conversations")
+        .insert({
+          org_id: orgId,
+          user_id: req.user!.id,
+          title,
+          ticket_text: ticket,
+          reply: draft.reply,
+          sources,
+          status,
+          priority: draft.priority,
+          category: draft.category,
+          confidence: draft.confidence,
+          used_kb: kbResults.length > 0,
+        })
+        .select("id")
+        .single();
+      conversationId = conv?.id || null;
+
+      // Auto-create ticket for high/critical priority
+      if (
+        conversationId &&
+        (draft.priority === "high" || draft.priority === "critical")
+      ) {
+        await supabase.from("tickets").insert({
+          org_id: orgId,
+          conversation_id: conversationId,
+          user_id: req.user!.id,
+          title,
+          status: "open",
+          priority: draft.priority,
+        });
+      }
+    }
+
+    return res.json({
+      reply: draft.reply,
+      sources,
+      conversationId,
+      priority: draft.priority,
+      category: draft.category,
+      confidence: draft.confidence,
+      autoEscalated: status === "needs_review",
+      usedKb: kbResults.length > 0,
+    });
   } catch (err: any) {
     return res.status(500).json({
       error: "Source agent failed",
