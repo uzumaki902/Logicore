@@ -318,28 +318,42 @@ async function processDocument(
   content: string,
 ) {
   const chunks = chunkText(content);
+  let successCount = 0;
 
   for (let i = 0; i < chunks.length; i++) {
     try {
       const embedding = await generateEmbedding(chunks[i]);
 
-      await supabase.from("document_chunks").insert({
-        document_id: documentId,
-        org_id: orgId,
-        chunk_text: chunks[i],
-        embedding: JSON.stringify(embedding),
-        chunk_index: i,
-      });
-    } catch (err) {
-      console.error(`Failed to process chunk ${i}:`, err);
+      const { error: insertError } = await supabase
+        .from("document_chunks")
+        .insert({
+          document_id: documentId,
+          org_id: orgId,
+          chunk_text: chunks[i],
+          embedding: JSON.stringify(embedding),
+          chunk_index: i,
+        });
+
+      if (insertError) {
+        console.error(`Chunk ${i} insert failed:`, insertError.message);
+      } else {
+        successCount++;
+      }
+    } catch (err: any) {
+      console.error(`Chunk ${i} processing failed:`, err?.message || err);
     }
   }
 
-  // Update document status
+  // Update document status based on actual results
+  const status = successCount > 0 ? "ready" : "error";
   await supabase
     .from("documents")
-    .update({ chunk_count: chunks.length, status: "ready" })
+    .update({ chunk_count: successCount, status })
     .eq("id", documentId);
+
+  console.log(
+    `Document ${documentId}: ${successCount}/${chunks.length} chunks embedded, status=${status}`,
+  );
 }
 
 // List documents for user's org
