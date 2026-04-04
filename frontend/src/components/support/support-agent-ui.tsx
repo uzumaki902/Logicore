@@ -16,7 +16,6 @@ type Props = {
     result: ResultState | null;
     conversationId: string | null;
     onAgentRun: () => void;
-    onCreateTicket: () => void;
 };
 
 /* ── Agent Activity Indicator ── */
@@ -140,7 +139,6 @@ function SupportAgentUi(props: Props) {
         conversationId,
         onTicketChange,
         onAgentRun,
-        onCreateTicket,
     } = props;
 
     return (
@@ -273,21 +271,7 @@ function SupportAgentUi(props: Props) {
                             </div>
                         )}
 
-                        <div className="flex gap-3">
-                            <Button
-                                variant="outline"
-                                onClick={onCreateTicket}
-                                className="flex-1 h-9 rounded-xl border-gray-200 dark:border-[#1F2937] text-xs font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-[#1A2233] hover:text-gray-900 dark:hover:text-white transition-all duration-200 press-scale"
-                            >
-                                📋 Create Ticket
-                            </Button>
-                            <Button
-                                onClick={onCreateTicket}
-                                className="flex-1 h-9 rounded-xl bg-amber-600/80 text-xs font-medium text-white hover:bg-amber-500 transition-all duration-200 press-scale"
-                            >
-                                🚨 Escalate
-                            </Button>
-                        </div>
+
                     </div>
                 )}
             </div>
