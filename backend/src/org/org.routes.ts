@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
     .single();
 
   if (orgErr || !org) {
-    return res.status(500).json({ error: "Failed to create organization" });
+    return res.status(500).json({ error: "Failed to create organization", details: orgErr?.message });
   }
 
   // Add current user as owner
@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
   });
 
   if (memberErr) {
-    return res.status(500).json({ error: "Failed to add member" });
+    return res.status(500).json({ error: "Failed to add member", details: memberErr?.message });
   }
 
   return res.json({ org });
