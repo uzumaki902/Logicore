@@ -26,6 +26,7 @@ export default function Support() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     fetchHistory();
@@ -105,12 +106,23 @@ export default function Support() {
 
     if (res.ok) {
       fetchHistory();
-      alert("Ticket created successfully!");
+      setToast("🎫 Ticket created successfully!");
+      setTimeout(() => setToast(null), 3000);
     }
   }
 
   return (
     <div className="space-y-6 fade-in">
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-emerald-600/20 animate-in slide-in-from-top-2 duration-300">
+          <span>{toast}</span>
+          <button onClick={() => setToast(null)} className="ml-2 rounded-full p-0.5 hover:bg-white/20 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
