@@ -23,10 +23,6 @@ export default function KnowledgeBase() {
     const [isPdf, setIsPdf] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        fetchDocuments();
-    }, []);
-
     async function fetchDocuments() {
         const res = await apiGet<{ documents: Document[] }>("/api/knowledge/documents");
         if (res.ok) {
@@ -34,6 +30,18 @@ export default function KnowledgeBase() {
         }
         setLoading(false);
     }
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            const res = await apiGet<{ documents: Document[] }>("/api/knowledge/documents");
+            if (!cancelled && res.ok) {
+                setDocuments(res.data.documents);
+            }
+            if (!cancelled) setLoading(false);
+        })();
+        return () => { cancelled = true; };
+    }, []);
 
     function readFile(file: File) {
         setFilename(file.name);

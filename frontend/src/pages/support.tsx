@@ -27,10 +27,6 @@ export default function Support() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
-
   async function fetchHistory() {
     const res = await apiGet<{ conversations: Conversation[] }>(
       "/api/support/history"
@@ -39,6 +35,10 @@ export default function Support() {
       setConversations(res.data.conversations);
     }
   }
+
+  useEffect(() => {
+    void fetchHistory();
+  }, []);
 
   async function callAgent(payload: CallAgentPayload) {
     setLoading(true);
@@ -55,7 +55,7 @@ export default function Support() {
 
     return {
       ...parsed.data,
-      conversationId: (res.data as any).conversationId || null,
+      conversationId: (res.data as SupportResponse & { conversationId: string }).conversationId || null,
     };
   }
 

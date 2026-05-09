@@ -24,8 +24,8 @@ function AgentThinking({ loading }: { loading: boolean }) {
 
     useEffect(() => {
         if (!loading) {
-            setSteps([]);
-            return;
+            const t = setTimeout(() => setSteps([]), 0);
+            return () => clearTimeout(t);
         }
 
         const sequence = [
