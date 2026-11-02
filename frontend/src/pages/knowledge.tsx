@@ -1,6 +1,7 @@
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
+import { FolderUp, Link2, CheckCircle2, Upload, FileText, Trash2 } from "lucide-react";
 
 type Document = {
     id: string;
@@ -181,15 +182,17 @@ export default function KnowledgeBase() {
                     <div className="flex gap-1 rounded-lg bg-gray-100 dark:bg-[#0B0F14] p-1 mb-4">
                         <button
                             onClick={() => setUploadMode("file")}
-                            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${uploadMode === "file" ? "bg-white dark:bg-[#1A2233] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${uploadMode === "file" ? "bg-white dark:bg-[#1A2233] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"}`}
                         >
-                            📁 File Upload
+                            <FolderUp className="w-3.5 h-3.5" />
+                            File Upload
                         </button>
                         <button
                             onClick={() => setUploadMode("url")}
-                            className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${uploadMode === "url" ? "bg-white dark:bg-[#1A2233] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200 ${uploadMode === "url" ? "bg-white dark:bg-[#1A2233] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300"}`}
                         >
-                            🔗 URL Import
+                            <Link2 className="w-3.5 h-3.5" />
+                            URL Import
                         </button>
                     </div>
 
@@ -221,7 +224,14 @@ export default function KnowledgeBase() {
                                     </svg>
                                 </div>
                                 <p className="text-sm font-medium text-gray-600 dark:text-slate-300">
-                                    {content ? `✅ ${filename}` : "Click to select or drag & drop"}
+                                    {content ? (
+                                        <>
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-500 inline-block" />
+                                            <span>{filename}</span>
+                                        </>
+                                    ) : (
+                                        "Click to select or drag & drop"
+                                    )}
                                 </p>
                                 <p className="mt-1 text-[11px] text-gray-400 dark:text-slate-500">
                                     .txt, .md, .csv, .json, .log, .html, .xml
@@ -266,7 +276,10 @@ export default function KnowledgeBase() {
                                         Uploading & Embedding...
                                     </span>
                                 ) : (
-                                    "📄 Upload Document"
+                                    <span className="flex items-center justify-center gap-2">
+                                        <Upload className="w-4 h-4" />
+                                        Upload Document
+                                    </span>
                                 )}
                             </Button>
                         </div>
@@ -299,7 +312,10 @@ export default function KnowledgeBase() {
                                         Fetching & Embedding...
                                     </span>
                                 ) : (
-                                    "🔗 Import from URL"
+                                    <span className="flex items-center justify-center gap-2">
+                                        <Link2 className="w-4 h-4" />
+                                        Import from URL
+                                    </span>
                                 )}
                             </Button>
                         </div>
@@ -323,8 +339,9 @@ export default function KnowledgeBase() {
                                     className="flex items-center justify-between rounded-lg px-4 py-3 bg-gray-50 dark:bg-[#0B0F14]/50 transition-colors duration-200"
                                 >
                                     <div className="flex-1">
-                                        <p className="text-sm font-medium text-gray-700 dark:text-slate-200">
-                                            📄 {doc.filename}
+                                        <p className="text-sm font-medium text-gray-700 dark:text-slate-200 flex items-center gap-2">
+                                            <FileText className="w-4 h-4 text-gray-400 dark:text-slate-500 flex-shrink-0" />
+                                            <span>{doc.filename}</span>
                                         </p>
                                         <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">
                                             {doc.chunk_count} chunks •{" "}
@@ -341,10 +358,10 @@ export default function KnowledgeBase() {
                                         </span>
                                         <button
                                             onClick={() => handleDelete(doc.id)}
-                                            className="text-xs text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                                            className="p-1 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-colors"
                                             title="Delete document"
                                         >
-                                            🗑️
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>

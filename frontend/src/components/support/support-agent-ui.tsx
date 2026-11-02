@@ -2,9 +2,10 @@ import type { ResultState } from "@/lib/support.types";
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
 import { apiPost } from "@/lib/api";
+import { Search, Globe, Sparkles, Check } from "lucide-react";
 
 type AgentStep = {
-    icon: string;
+    icon: React.ComponentType<{ className?: string }>;
     label: string;
     done: boolean;
 };
@@ -29,9 +30,9 @@ function AgentThinking({ loading }: { loading: boolean }) {
         }
 
         const sequence = [
-            { icon: "🔎", label: "Analyzing request...", delay: 0 },
-            { icon: "🌐", label: "Searching knowledge sources...", delay: 1200 },
-            { icon: "✨", label: "Generating response...", delay: 2400 },
+            { icon: Search, label: "Analyzing request...", delay: 0 },
+            { icon: Globe, label: "Searching knowledge sources...", delay: 1200 },
+            { icon: Sparkles, label: "Generating response...", delay: 2400 },
         ];
 
         const timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -56,25 +57,30 @@ function AgentThinking({ loading }: { loading: boolean }) {
             <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-3">
                 Agent Activity
             </p>
-            {steps.map((step, i) => (
-                <div
-                    key={i}
-                    className={`flex items-center gap-2.5 text-xs transition-all duration-300 ${step.done
-                        ? "text-gray-400 dark:text-slate-500"
-                        : "text-gray-700 dark:text-slate-200"
-                        }`}
-                    style={{ animationDelay: `${i * 100}ms` }}
-                >
-                    <span className="text-sm">{step.icon}</span>
-                    <span className="font-medium">{step.label}</span>
-                    {!step.done && (
-                        <span className="ml-auto inline-block h-1.5 w-1.5 rounded-full bg-[#6366F1] pulse-dot" />
-                    )}
-                    {step.done && (
-                        <span className="ml-auto text-emerald-500 text-xs font-medium">✓</span>
-                    )}
-                </div>
-            ))}
+            {steps.map((step, i) => {
+                const IconComponent = step.icon;
+                return (
+                    <div
+                        key={i}
+                        className={`flex items-center gap-2.5 text-xs transition-all duration-300 ${step.done
+                            ? "text-gray-400 dark:text-slate-500"
+                            : "text-gray-700 dark:text-slate-200"
+                            }`}
+                        style={{ animationDelay: `${i * 100}ms` }}
+                    >
+                        <span className="flex items-center justify-center w-4 h-4 text-gray-500 dark:text-slate-400">
+                            <IconComponent className="w-3.5 h-3.5" />
+                        </span>
+                        <span className="font-medium">{step.label}</span>
+                        {!step.done && (
+                            <span className="ml-auto inline-block h-1.5 w-1.5 rounded-full bg-[#6366F1] pulse-dot" />
+                        )}
+                        {step.done && (
+                            <Check className="ml-auto w-3.5 h-3.5 text-emerald-500" />
+                        )}
+                    </div>
+                );
+            })}
         </div>
     );
 }
